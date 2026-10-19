@@ -1,0 +1,22 @@
+.tufte-places-header-locality,
+.tufte-places-header-address {
+	margin: 0;
+	opacity: .75;
+}
+
+.tufte-places-photos {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+	gap: 1rem;
+	margin-top: 2rem;
+}
+
+.tufte-places-photo {
+	margin: 0;
+}
+
+.tufte-places-photo img {
+	display: block;
+	width: 100%;
+	height: auto;
+}
