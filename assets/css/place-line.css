@@ -1,0 +1,28 @@
+.tufte-places-line {
+	margin-top: .5em;
+	font-size: .9em;
+}
+
+.tufte-places-place {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0 .5em;
+	align-items: baseline;
+	margin: 0;
+}
+
+.tufte-places-pin svg {
+	width: .85em;
+	height: .85em;
+	fill: currentColor;
+	vertical-align: -.1em;
+}
+
+.tufte-places-name {
+	font-variant: small-caps;
+	letter-spacing: .04em;
+}
+
+.tufte-places-sep {
+	opacity: .5;
+}

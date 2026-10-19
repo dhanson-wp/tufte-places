@@ -33,6 +33,16 @@ function tufte_places_assert_same( $expected, $actual, string $name ): void {
 	echo '      actual:   ' . var_export( $actual, true ) . "\n";
 }
 
+/**
+ * Read a fixture file from tests/fixtures.
+ *
+ * @param string $name File name.
+ * @return string
+ */
+function tufte_places_fixture( string $name ): string {
+	return (string) file_get_contents( __DIR__ . '/fixtures/' . $name );
+}
+
 foreach ( glob( __DIR__ . '/test-*.php' ) as $tufte_places_test_file ) {
 	echo "\n== " . basename( $tufte_places_test_file ) . "\n";
 	require $tufte_places_test_file;
