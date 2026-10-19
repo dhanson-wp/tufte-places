@@ -23,12 +23,21 @@
 		return ( holder.textContent || '' ).replace( / /g, ' ' ).trim();
 	}
 
-	function libraryCaption( media ) {
-		if ( ! media || ! media.caption ) {
+	// Prefer the raw caption (edit context). Fall back to the rendered caption
+	// (view context) once the edit request has finished without a record.
+	function libraryCaption( lookup ) {
+		if ( ! lookup ) {
 			return '';
 		}
-		var caption = media.caption;
-		return normalize( caption.raw ? caption.raw : caption.rendered );
+		var edit = lookup.edit;
+		if ( edit && edit.caption && typeof edit.caption.raw === 'string' ) {
+			return normalize( edit.caption.raw );
+		}
+		if ( ! lookup.editDone ) {
+			return '';
+		}
+		var view = lookup.view;
+		return view && view.caption ? normalize( view.caption.rendered ) : '';
 	}
 
 	addFilter(
@@ -52,17 +61,23 @@
 			var attachmentId = isImage ? props.attributes.id : 0;
 			var handled = useRef( 0 );
 
-			var media = useSelect(
+			var lookup = useSelect(
 				function ( select ) {
 					if ( ! attachmentId ) {
 						return null;
 					}
-					return select( 'core' ).getMedia( attachmentId, { context: 'view' } );
+					var core = select( 'core' );
+					var editArgs = [ attachmentId, { context: 'edit' } ];
+					return {
+						edit: core.getMedia( editArgs[ 0 ], editArgs[ 1 ] ),
+						editDone: core.hasFinishedResolution( 'getMedia', editArgs ),
+						view: core.getMedia( attachmentId, { context: 'view' } ),
+					};
 				},
 				[ attachmentId ]
 			);
 
-			var library = libraryCaption( media );
+			var library = libraryCaption( lookup );
 			var blockCaption = isImage ? normalize( props.attributes.caption ) : '';
 
 			useEffect(
