@@ -67,12 +67,37 @@ tufte_places_assert_same( true, str_contains( $tp_untagged_out, '<em>Quiet</em> 
 tufte_places_assert_same( false, str_contains( $tp_untagged_out, '<script' ), 'render: library caption scripts are stripped' );
 tufte_places_assert_same( true, wp_style_is( 'tufte-places-line', 'enqueued' ), 'render: the line stylesheet is enqueued once a line renders' );
 
+// Captions that differ only by entities count as the same, so the library caption (and its markup) shows.
+$tp_r_fish  = wp_insert_attachment( array( 'post_title' => 'Render fish', 'post_excerpt' => '<em>Fish</em> & chips', 'post_mime_type' => 'image/jpeg', 'post_status' => 'inherit' ) );
+$tp_r_nbsp  = wp_insert_attachment( array( 'post_title' => 'Render nbsp', 'post_excerpt' => 'The <em>bread</em> wall', 'post_mime_type' => 'image/jpeg', 'post_status' => 'inherit' ) );
+// Store the raw "&" an admin with unfiltered_html saves; WP-CLI's kses would encode it.
+$GLOBALS['wpdb']->update( $GLOBALS['wpdb']->posts, array( 'post_excerpt' => '<em>Fish</em> & chips' ), array( 'ID' => $tp_r_fish ) );
+clean_post_cache( $tp_r_fish );
+$tp_fish    = '<!-- wp:image {"id":' . $tp_r_fish . ',"sizeSlug":"large"} --><figure class="wp-block-image size-large"><img src="https://example.org/fish.jpg" alt="" class="wp-image-' . $tp_r_fish . '"/><figcaption class="wp-element-caption">Fish &amp; chips</figcaption></figure><!-- /wp:image -->';
+$tp_nbsp    = '<!-- wp:image {"id":' . $tp_r_nbsp . ',"sizeSlug":"large"} --><figure class="wp-block-image size-large"><img src="https://example.org/bread.jpg" alt="" class="wp-image-' . $tp_r_nbsp . '"/><figcaption class="wp-element-caption">The&nbsp;bread wall&nbsp;</figcaption></figure><!-- /wp:image -->';
+$tp_fish_out = do_blocks( $tp_fish );
+$tp_nbsp_out = do_blocks( $tp_nbsp );
+tufte_places_assert_same( true, str_contains( $tp_fish_out, '><em>Fish</em> &amp; chips<' ) || str_contains( $tp_fish_out, '><em>Fish</em> & chips<' ), 'render: a block caption matching the library across &amp; shows the library caption' );
+tufte_places_assert_same( true, str_contains( $tp_nbsp_out, '>The <em>bread</em> wall<' ), 'render: a block caption matching the library across &nbsp; shows the library caption' );
+wp_update_post( array( 'ID' => $tp_r_fish, 'post_excerpt' => 'Fish &amp; chips' ) );
+tufte_places_assert_same( 1, substr_count( do_blocks( $tp_fish ), 'chips<' ), 'render: an entity-encoded library caption still matches and shows once' );
+
+// Aligned standalone images keep their alignment through the wrapper.
+$tp_left   = '<!-- wp:image {"id":' . $tp_r_blue . ',"sizeSlug":"large","align":"left"} --><figure class="wp-block-image alignleft size-large"><img src="https://example.org/blue.jpg" alt="" class="wp-image-' . $tp_r_blue . '"/></figure><!-- /wp:image -->';
+$tp_center = '<!-- wp:image {"id":' . $tp_r_blue . ',"sizeSlug":"large","align":"center"} --><figure class="wp-block-image aligncenter size-large"><img src="https://example.org/blue.jpg" alt="" class="wp-image-' . $tp_r_blue . '"/></figure><!-- /wp:image -->';
+$tp_left_out   = do_blocks( $tp_left );
+$tp_center_out = do_blocks( $tp_center );
+tufte_places_assert_same( true, str_contains( $tp_left_out, 'class="tufte-places-group alignleft"' ), 'render: wrapper carries alignleft' );
+tufte_places_assert_same( true, str_contains( $tp_left_out, 'wp-block-image alignleft size-large' ), 'render: a left-aligned image keeps its own classes' );
+tufte_places_assert_same( true, str_contains( $tp_center_out, 'class="tufte-places-group aligncenter"' ), 'render: wrapper carries aligncenter' );
+tufte_places_assert_same( true, str_contains( $tp_center_out, 'wp-block-image aligncenter size-large' ), 'render: a centered image keeps its own classes' );
+
 $tp_image_type   = WP_Block_Type_Registry::get_instance()->get_registered( 'core/image' );
 $tp_gallery_type = WP_Block_Type_Registry::get_instance()->get_registered( 'core/gallery' );
 tufte_places_assert_same( array( 'type' => 'boolean', 'default' => false ), $tp_image_type->attributes['tufteHideFromMap'] ?? null, 'render: image blocks accept tufteHideFromMap' );
 tufte_places_assert_same( array( 'type' => 'boolean', 'default' => false ), $tp_gallery_type->attributes['tufteHideFromMap'] ?? null, 'render: gallery blocks accept tufteHideFromMap' );
 
-foreach ( array( $tp_r_blue, $tp_r_bread, $tp_r_plain ) as $tp_r_att ) {
+foreach ( array( $tp_r_blue, $tp_r_bread, $tp_r_plain, $tp_r_fish, $tp_r_nbsp ) as $tp_r_att ) {
 	wp_delete_attachment( $tp_r_att, true );
 }
 wp_delete_term( $tp_r_place, 'place' );

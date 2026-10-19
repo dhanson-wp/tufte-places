@@ -50,6 +50,17 @@ function tufte_places_mark_gallery_images( array $parsed_block, array $source_bl
 add_filter( 'render_block_data', 'tufte_places_mark_gallery_images', 10, 3 );
 
 /**
+ * Caption text for comparing a block caption with the library caption: tags
+ * stripped, entities decoded, non-breaking spaces made plain, and trimmed.
+ *
+ * @param string $caption Caption markup.
+ * @return string
+ */
+function tufte_places_normalize_caption( string $caption ): string {
+	return trim( str_replace( "\u{00A0}", ' ', html_entity_decode( wp_strip_all_tags( $caption ), ENT_QUOTES | ENT_HTML5, 'UTF-8' ) ) );
+}
+
+/**
  * The caption to show for a photo.
  *
  * The block's own caption wins, unless it's empty or the same as the library
@@ -61,9 +72,9 @@ add_filter( 'render_block_data', 'tufte_places_mark_gallery_images', 10, 3 );
  */
 function tufte_places_effective_caption( string $block_caption, int $attachment_id ): string {
 	$library_caption = (string) wp_get_attachment_caption( $attachment_id );
-	$block_text      = trim( wp_strip_all_tags( $block_caption ) );
+	$block_text      = tufte_places_normalize_caption( $block_caption );
 
-	if ( '' === $block_text || trim( wp_strip_all_tags( $library_caption ) ) === $block_text ) {
+	if ( '' === $block_text || tufte_places_normalize_caption( $library_caption ) === $block_text ) {
 		return wp_kses_post( $library_caption );
 	}
 
@@ -112,13 +123,14 @@ function tufte_places_block_caption( string $html ): string {
  *
  * @param string $block_html Rendered block.
  * @param string $line_html  Place line markup.
- * @param array  $attrs      Block attributes.
+ * @param array  $attrs      Block attributes. Its alignment is copied to the
+ *                           wrapper, since core aligns direct children only.
  * @return string
  */
 function tufte_places_wrap( string $block_html, string $line_html, array $attrs ): string {
 	$class = 'tufte-places-group';
 	$align = $attrs['align'] ?? '';
-	if ( 'wide' === $align || 'full' === $align ) {
+	if ( in_array( $align, array( 'wide', 'full', 'left', 'right', 'center' ), true ) ) {
 		$class .= ' align' . $align;
 	}
 
