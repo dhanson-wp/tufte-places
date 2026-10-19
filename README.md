@@ -17,7 +17,7 @@ Every place has a precision:
 
 ## Tagging photos
 
-Tag a photo with a place in the media library, in the Place box on the attachment. Tag a post the same way, or let the plugin do it for you: when a post uses tagged photos, the plugin adds those places to the post, and it removes them again when the photos go away. A place you added by hand that also comes from a photo is removed when that photo goes away, so add a place by hand only when no photo carries it.
+Tag a photo with a place in the Places field of the media modal. Tag a post the same way, or let the plugin do it for you: when a post uses tagged photos, the plugin adds those places to the post, and it removes them again when the photos go away. A place you added by hand that also comes from a photo is removed when that photo goes away, so add a place by hand only when no photo carries it.
 
 To sync every post (or one) after a bulk change:
 
