@@ -43,7 +43,11 @@ function tufte_places_photo_hidden_from_map( int $attachment_id ): bool {
 }
 
 /**
- * Add the "Keep off the map" checkbox to the media modal and attachment screen.
+ * Add the "Keep off the map" checkbox to the attachment fields, which render in
+ * the media modal and on the attachment edit screen.
+ *
+ * A hidden sentinel input marks the field as present in the submitted form, so a
+ * save from a form without it leaves the flag alone.
  *
  * @param array   $fields Attachment fields.
  * @param WP_Post $post   Attachment.
@@ -57,7 +61,7 @@ function tufte_places_attachment_fields( array $fields, WP_Post $post ): array {
 		'label' => __( 'Keep off the map', 'tufte-places' ),
 		'input' => 'html',
 		'html'  => sprintf(
-			'<input type="checkbox" id="attachments-%1$d-tufte_places_hide_from_map" name="attachments[%1$d][tufte_places_hide_from_map]" value="1"%2$s />',
+			'<input type="hidden" name="attachments[%1$d][tufte_places_hide_from_map_present]" value="1" /><input type="checkbox" id="attachments-%1$d-tufte_places_hide_from_map" name="attachments[%1$d][tufte_places_hide_from_map]" value="1"%2$s />',
 			$id,
 			$checked
 		),
@@ -69,7 +73,11 @@ function tufte_places_attachment_fields( array $fields, WP_Post $post ): array {
 add_filter( 'attachment_fields_to_edit', 'tufte_places_attachment_fields', 10, 2 );
 
 /**
- * Save the "Keep off the map" checkbox. An absent field means unchecked.
+ * Save the "Keep off the map" checkbox.
+ *
+ * Core runs this on every attachment save, so the flag changes only when the
+ * sentinel says the field was in the form. Sentinel without the checkbox means
+ * unchecked; no sentinel leaves the flag untouched.
  *
  * @param array $post       Attachment data being saved.
  * @param array $attachment Submitted attachment fields.
@@ -77,7 +85,7 @@ add_filter( 'attachment_fields_to_edit', 'tufte_places_attachment_fields', 10, 2
  */
 function tufte_places_attachment_fields_save( array $post, array $attachment ): array {
 	$id = (int) ( $post['ID'] ?? 0 );
-	if ( $id > 0 ) {
+	if ( $id > 0 && isset( $attachment['tufte_places_hide_from_map_present'] ) ) {
 		if ( ! empty( $attachment['tufte_places_hide_from_map'] ) ) {
 			update_post_meta( $id, 'tufte_places_hide_from_map', true );
 		} else {
