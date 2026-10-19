@@ -43,6 +43,18 @@ function tufte_places_fixture( string $name ): string {
 	return (string) file_get_contents( __DIR__ . '/fixtures/' . $name );
 }
 
+/**
+ * Sorted place term IDs on a post.
+ *
+ * @param int $post_id Post ID.
+ * @return int[]
+ */
+function tufte_places_sorted_terms( int $post_id ): array {
+	$ids = array_map( 'intval', wp_get_object_terms( $post_id, 'place', array( 'fields' => 'ids' ) ) );
+	sort( $ids );
+	return $ids;
+}
+
 foreach ( glob( __DIR__ . '/test-*.php' ) as $tufte_places_test_file ) {
 	echo "\n== " . basename( $tufte_places_test_file ) . "\n";
 	require $tufte_places_test_file;
