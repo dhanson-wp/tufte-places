@@ -24,5 +24,6 @@ require_once __DIR__ . '/includes/admin-terms.php';
 require_once __DIR__ . '/includes/attachments.php';
 require_once __DIR__ . '/includes/place-line.php';
 require_once __DIR__ . '/includes/render.php';
+require_once __DIR__ . '/includes/editor.php';
 require_once __DIR__ . '/includes/sync.php';
 require_once __DIR__ . '/includes/cli.php';
