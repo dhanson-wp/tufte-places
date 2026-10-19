@@ -20,3 +20,4 @@ define( 'TUFTE_PLACES_VERSION', '0.1.0' );
 define( 'TUFTE_PLACES_PLUGIN_FILE', __FILE__ );
 
 require_once __DIR__ . '/includes/taxonomy.php';
+require_once __DIR__ . '/includes/admin-terms.php';
