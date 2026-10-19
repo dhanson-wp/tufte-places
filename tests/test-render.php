@@ -97,6 +97,11 @@ $tp_gallery_type = WP_Block_Type_Registry::get_instance()->get_registered( 'core
 tufte_places_assert_same( array( 'type' => 'boolean', 'default' => false ), $tp_image_type->attributes['tufteHideFromMap'] ?? null, 'render: image blocks accept tufteHideFromMap' );
 tufte_places_assert_same( array( 'type' => 'boolean', 'default' => false ), $tp_gallery_type->attributes['tufteHideFromMap'] ?? null, 'render: gallery blocks accept tufteHideFromMap' );
 
+// A differing block caption is left exactly as saved, even markup wp_kses_post would strip.
+$tp_override_caption = 'My <span style="color:red" data-note="x">own</span> caption';
+$tp_override_image   = '<!-- wp:image {"id":' . $tp_r_blue . ',"sizeSlug":"large"} --><figure class="wp-block-image size-large"><img src="https://example.org/blue.jpg" alt="" class="wp-image-' . $tp_r_blue . '"/><figcaption class="wp-element-caption">' . $tp_override_caption . '</figcaption></figure><!-- /wp:image -->';
+tufte_places_assert_same( true, str_contains( do_blocks( $tp_override_image ), '<figcaption class="wp-element-caption">' . $tp_override_caption . '</figcaption>' ), 'render: an override caption survives untouched' );
+
 foreach ( array( $tp_r_blue, $tp_r_bread, $tp_r_plain, $tp_r_fish, $tp_r_nbsp ) as $tp_r_att ) {
 	wp_delete_attachment( $tp_r_att, true );
 }

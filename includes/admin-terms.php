@@ -115,6 +115,7 @@ function tufte_places_print_term_fields( string $precision, string $address, str
 	}
 	?>
 	<fieldset>
+		<legend class="screen-reader-text"><?php esc_html_e( 'Precision', 'tufte-places' ); ?></legend>
 		<label><input type="radio" name="tufte_places_precision" value="exact" <?php checked( 'exact', $precision ); ?> /> <?php esc_html_e( 'Exact', 'tufte-places' ); ?></label><br />
 		<label><input type="radio" name="tufte_places_precision" value="general" <?php checked( 'general', $precision ); ?> /> <?php esc_html_e( 'General', 'tufte-places' ); ?></label>
 	</fieldset>

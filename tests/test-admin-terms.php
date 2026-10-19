@@ -36,6 +36,7 @@ foreach ( array( 'edit' => $tp_edit_html, 'add' => $tp_add_html ) as $tp_screen 
 		tufte_places_assert_same( true, false !== strpos( $tp_html, 'name="' . $tp_field . '"' ), "form ({$tp_screen}): has {$tp_field}" );
 	}
 }
+tufte_places_assert_same( true, str_contains( $tp_edit_html, '<legend class="screen-reader-text">Precision</legend>' ) && str_contains( $tp_add_html, '<legend class="screen-reader-text">Precision</legend>' ), 'form: the precision fieldset has a screen reader legend' );
 tufte_places_assert_same( true, (bool) preg_match( '/value="general"\s+checked/', $tp_edit_html ), 'form (edit): general is checked for a general place' );
 
 // The hooks check the nonce and the capability before saving.

@@ -28,3 +28,34 @@ require_once __DIR__ . '/includes/editor.php';
 require_once __DIR__ . '/includes/sync.php';
 require_once __DIR__ . '/includes/archive.php';
 require_once __DIR__ . '/includes/cli.php';
+
+/**
+ * Flush rewrite rules on activation, after the taxonomy is registered.
+ */
+function tufte_places_activate(): void {
+	tufte_places_register_taxonomy();
+	flush_rewrite_rules();
+	update_option( 'tufte_places_rewrite_version', TUFTE_PLACES_VERSION );
+}
+register_activation_hook( __FILE__, 'tufte_places_activate' );
+
+/**
+ * Flush rewrite rules on deactivation.
+ */
+function tufte_places_deactivate(): void {
+	flush_rewrite_rules();
+}
+register_deactivation_hook( __FILE__, 'tufte_places_deactivate' );
+
+/**
+ * Flush rewrite rules once when the plugin version changes, which covers
+ * deploys where the plugin is already active.
+ */
+function tufte_places_maybe_flush_rewrites(): void {
+	if ( TUFTE_PLACES_VERSION === get_option( 'tufte_places_rewrite_version' ) ) {
+		return;
+	}
+	flush_rewrite_rules();
+	update_option( 'tufte_places_rewrite_version', TUFTE_PLACES_VERSION );
+}
+add_action( 'init', 'tufte_places_maybe_flush_rewrites', 20 );

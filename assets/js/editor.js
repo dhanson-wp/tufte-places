@@ -18,9 +18,8 @@
 		if ( ! html ) {
 			return '';
 		}
-		var holder = document.createElement( 'div' );
-		holder.innerHTML = html;
-		return ( holder.textContent || '' ).replace( / /g, ' ' ).trim();
+		var text = new DOMParser().parseFromString( html, 'text/html' ).body.textContent;
+		return ( text || '' ).replace( /\u00A0/g, ' ' ).trim();
 	}
 
 	// Prefer the raw caption (edit context). Fall back to the rendered caption
@@ -97,6 +96,8 @@
 				return el( BlockEdit, props );
 			}
 
+			var showLibraryCaption = isImage && attachmentId && library && ! blockCaption;
+
 			var children = [
 				el( BlockEdit, Object.assign( { key: 'edit' }, props ) ),
 				el(
@@ -105,6 +106,12 @@
 					el(
 						PanelBody,
 						{ title: __( 'Place', 'tufte-places' ), initialOpen: true },
+						showLibraryCaption &&
+							el(
+								'p',
+								{ className: 'tufte-places-library-caption' },
+								__( 'Library caption:', 'tufte-places' ) + ' ' + library
+							),
 						el( ToggleControl, {
 							__nextHasNoMarginBottom: true,
 							label: __( 'Keep off the map', 'tufte-places' ),
@@ -117,16 +124,6 @@
 					)
 				),
 			];
-
-			if ( isImage && attachmentId && library && ! blockCaption ) {
-				children.push(
-					el(
-						'p',
-						{ key: 'library-caption', className: 'tufte-places-library-caption', style: { opacity: 0.7, fontSize: '0.85em', margin: '0.5em 0' } },
-						__( 'Library caption:', 'tufte-places' ) + ' ' + library
-					)
-				);
-			}
 
 			return el( wp.element.Fragment, null, children );
 		};

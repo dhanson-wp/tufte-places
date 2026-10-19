@@ -168,9 +168,16 @@ function tufte_places_render_image( string $html, array $block ): string {
 		return $html;
 	}
 
-	$caption = tufte_places_effective_caption( tufte_places_block_caption( $html ), $attachment_id );
-	if ( '' !== $caption ) {
-		$html = tufte_places_set_figcaption( $html, $caption );
+	$block_caption = tufte_places_block_caption( $html );
+	$block_text    = tufte_places_normalize_caption( $block_caption );
+	$library_text  = tufte_places_normalize_caption( (string) wp_get_attachment_caption( $attachment_id ) );
+
+	// A block caption that differs from the library caption is the author's own; leave it exactly as saved.
+	if ( '' === $block_text || $block_text === $library_text ) {
+		$caption = tufte_places_effective_caption( $block_caption, $attachment_id );
+		if ( '' !== $caption ) {
+			$html = tufte_places_set_figcaption( $html, $caption );
+		}
 	}
 
 	if ( ! empty( $block['attrs']['tuftePlacesInGallery'] ) ) {

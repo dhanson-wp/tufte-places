@@ -137,6 +137,8 @@ function tufte_places_render_place_header( int $term_id ): string {
 		return '';
 	}
 
+	wp_enqueue_style( 'tufte-places-archive' );
+
 	$html = '<header class="tufte-places-header"><h1 class="tufte-places-header-name">' . esc_html( $place['name'] ) . '</h1>';
 
 	$locality = tufte_places_locality( $place['id'] );

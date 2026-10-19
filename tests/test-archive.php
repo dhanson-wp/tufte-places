@@ -42,7 +42,13 @@ $tp_p4 = wp_insert_post( array( 'post_title' => 'Archive P4', 'post_status' => '
 tufte_places_assert_same( array( $tp_a1 ), tufte_places_archive_photo_ids( $tp_hof ), 'archive: a password-protected post does not contribute photos' );
 tufte_places_assert_same( true, null !== get_block_template( 'tufte-places//taxonomy-place' ), 'archive: block template registered' );
 
+wp_dequeue_style( 'tufte-places-archive' );
 $tp_head_general = tufte_places_render_place_header( $tp_ames );
+tufte_places_assert_same( true, wp_style_is( 'tufte-places-archive', 'enqueued' ), 'archive: the header enqueues the archive stylesheet' );
+$tp_template_html = (string) file_get_contents( dirname( TUFTE_PLACES_PLUGIN_FILE ) . '/templates/taxonomy-place.html' );
+foreach ( array( 'wp:query-pagination-previous', 'wp:query-pagination-numbers', 'wp:query-pagination-next', 'wp:query-no-results' ) as $tp_block ) {
+	tufte_places_assert_same( true, str_contains( $tp_template_html, $tp_block ), "archive: template has {$tp_block}" );
+}
 tufte_places_assert_same( false, str_contains( $tp_head_general, 'openstreetmap' ), 'archive: general place header has no map link' );
 tufte_places_assert_same( true, str_contains( $tp_head_general, '<h1 class="tufte-places-header-name">Archive Ames</h1>' ), 'archive: header has the name as h1' );
 $tp_head_exact = tufte_places_render_place_header( $tp_hof );
