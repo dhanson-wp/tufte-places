@@ -21,3 +21,4 @@ define( 'TUFTE_PLACES_PLUGIN_FILE', __FILE__ );
 
 require_once __DIR__ . '/includes/taxonomy.php';
 require_once __DIR__ . '/includes/admin-terms.php';
+require_once __DIR__ . '/includes/attachments.php';
