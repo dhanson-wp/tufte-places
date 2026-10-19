@@ -53,6 +53,24 @@ $tp_grid = tufte_places_render_photos( $tp_hof );
 tufte_places_assert_same( true, str_contains( $tp_grid, 'tufte-places-photo' ) && str_contains( $tp_grid, 'Caption for Archive A1' ), 'archive: photo grid shows the library caption' );
 tufte_places_assert_same( '', tufte_places_render_photos( $tp_ames ), 'archive: no photos renders nothing' );
 
+$tp_lim  = (int) wp_insert_term( 'Archive Limit', 'place' )['term_id'];
+$tp_ls   = $tp_att( 'Archive LS' );
+$tp_lx1  = $tp_att( 'Archive LX1' );
+$tp_lx2  = $tp_att( 'Archive LX2' );
+foreach ( array( $tp_ls, $tp_lx1, $tp_lx2 ) as $tp_id ) {
+	wp_set_object_terms( $tp_id, array( $tp_lim ), 'place' );
+}
+$tp_old = wp_insert_post( array( 'post_title' => 'Archive Old', 'post_status' => 'publish', 'post_date' => gmdate( 'Y-m-d H:i:s', time() - 2 * DAY_IN_SECONDS ), 'post_content' => $tp_img( $tp_ls ) . $tp_img( $tp_lx1 ) ) );
+$tp_new = wp_insert_post( array( 'post_title' => 'Archive New', 'post_status' => 'publish', 'post_date' => gmdate( 'Y-m-d H:i:s', time() - DAY_IN_SECONDS ), 'post_content' => $tp_img( $tp_ls ) . $tp_img( $tp_lx2 ) ) );
+tufte_places_assert_same( array( $tp_ls, $tp_lx2 ), tufte_places_archive_photo_ids( $tp_lim, 2 ), 'archive: limit stops collection, newest post first, content order' );
+tufte_places_assert_same( array( $tp_ls, $tp_lx2, $tp_lx1 ), tufte_places_archive_photo_ids( $tp_lim ), 'archive: shared photo deduplicated, older post last' );
+wp_delete_post( $tp_old, true );
+wp_delete_post( $tp_new, true );
+foreach ( array( $tp_ls, $tp_lx1, $tp_lx2 ) as $tp_id ) {
+	wp_delete_attachment( $tp_id, true );
+}
+wp_delete_term( $tp_lim, 'place' );
+
 wp_delete_post( $tp_p1, true );
 wp_delete_post( $tp_p2, true );
 wp_delete_post( $tp_p3, true );

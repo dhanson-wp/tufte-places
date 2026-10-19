@@ -42,43 +42,55 @@ function tufte_places_archive_photo_ids( int $term_id, int $limit = 60 ): array 
 	$term_ids   = array_map( 'intval', get_term_children( $term_id, 'place' ) );
 	$term_ids[] = $term_id;
 
-	$posts = get_posts(
-		array(
-			'post_type'              => $types,
-			'post_status'            => 'publish',
-			'has_password'           => false,
-			'posts_per_page'         => -1,
-			'orderby'                => 'date',
-			'order'                  => 'DESC',
-			'no_found_rows'          => true,
-			'update_post_term_cache' => false,
-			'tax_query'              => array(
-				array(
-					'taxonomy'         => 'place',
-					'field'            => 'term_id',
-					'terms'            => $term_id,
-					'include_children' => true,
-				),
+	$args = array(
+		'post_type'              => $types,
+		'post_status'            => 'publish',
+		'has_password'           => false,
+		'posts_per_page'         => 50,
+		'orderby'                => 'date',
+		'order'                  => 'DESC',
+		'no_found_rows'          => true,
+		'update_post_term_cache' => false,
+		'update_post_meta_cache' => false,
+		'tax_query'              => array(
+			array(
+				'taxonomy'         => 'place',
+				'field'            => 'term_id',
+				'terms'            => $term_id,
+				'include_children' => true,
 			),
-		)
+		),
 	);
 
 	$result = array();
-	foreach ( $posts as $post ) {
-		foreach ( tufte_places_content_attachment_ids( $post->post_content ) as $attachment_id ) {
-			if ( isset( $result[ $attachment_id ] ) || 'attachment' !== get_post_type( $attachment_id ) ) {
+	$paged  = 1;
+	do {
+		$posts = get_posts( $args + array( 'paged' => $paged ) );
+		++$paged;
+
+		foreach ( $posts as $post ) {
+			$candidates = array_values( array_filter( tufte_places_content_attachment_ids( $post->post_content ), static fn( int $id ): bool => ! isset( $result[ $id ] ) ) );
+			if ( array() === $candidates ) {
 				continue;
 			}
-			$tagged = wp_get_object_terms( $attachment_id, 'place', array( 'fields' => 'ids' ) );
-			if ( is_wp_error( $tagged ) || array() === array_intersect( array_map( 'intval', $tagged ), $term_ids ) ) {
-				continue;
-			}
-			$result[ $attachment_id ] = $attachment_id;
-			if ( count( $result ) >= $limit ) {
-				break 2;
+			_prime_post_caches( $candidates, false, false );
+			update_object_term_cache( $candidates, 'attachment' );
+
+			foreach ( $candidates as $attachment_id ) {
+				if ( 'attachment' !== get_post_type( $attachment_id ) ) {
+					continue;
+				}
+				$tagged = wp_get_object_terms( $attachment_id, 'place', array( 'fields' => 'ids' ) );
+				if ( is_wp_error( $tagged ) || array() === array_intersect( array_map( 'intval', $tagged ), $term_ids ) ) {
+					continue;
+				}
+				$result[ $attachment_id ] = $attachment_id;
+				if ( count( $result ) >= $limit ) {
+					break 3;
+				}
 			}
 		}
-	}
+	} while ( count( $posts ) === 50 );
 
 	return array_values( $result );
 }
