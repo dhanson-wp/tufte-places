@@ -19,13 +19,6 @@ Every place has a precision:
 
 Tag a photo with a place in the Places field of the media modal. Tag a post the same way, or let the plugin do it for you: when a post uses tagged photos, the plugin adds those places to the post, and it removes them again when the photos go away. A place you added by hand that also comes from a photo is removed when that photo goes away, so add a place by hand only when no photo carries it.
 
-To sync every post (or one) after a bulk change:
-
-```
-wp tufte-places sync
-wp tufte-places sync --post=123
-```
-
 ## Keep off the map
 
 Each photo has a "keep off the map" flag, a checkbox in the media modal and a toggle in the block sidebar for image and gallery blocks. The flag is stored for a future map. It doesn't change the page yet; the place line still shows.

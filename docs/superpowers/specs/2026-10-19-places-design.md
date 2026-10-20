@@ -74,7 +74,7 @@ A post's `place` terms are the union of the places of the Image and Gallery bloc
 
 - **When it syncs:** on post save, and whenever a photo's places change. The second case finds posts that use that attachment (by `wp-image-{id}` and block `"id":{id}` in content) and resyncs them.
 - **Removal:** the plugin remembers which places it derived (post meta `tufte_places_derived`). On resync it removes derived places that no longer apply. Places a person added to the post by hand are never removed.
-- **Backfill:** a WP-CLI command, `wp tufte-places sync [--post=<id>]`, resyncs one post or all of them. The Montreal rollout uses it after tagging photos.
+- **Backfill:** none needed. Tagging a photo resyncs every post that uses it, so bulk tagging in the media library updates the posts as it goes. (A WP-CLI backfill command shipped at first and was removed once the live site confirmed the photo hook covers it.)
 
 ### On the gallery block
 
@@ -154,7 +154,7 @@ At minimum: taxonomy and meta registration, the general-place clearing rule (edi
 1. Build and test the plugin locally on the Studio site.
 2. Child theme: add the sidenote CSS for the place line in the Derek Hanson Blog child theme (`themes/derekhanson-blog` in the `dhanson-wp/derekhanson-blog` repo, a child of Tufte Blocks). Not in Tufte Blocks itself.
 3. Create the Montreal places (list in the brainstorm notes: Boxotel, Hof Kelsten, Montréal Cowork, Le Port de tête, Le Valet d'Coeur, Mix'Heure, La Fabrique de Bagel, Schwartz's, Kitsch'n Swell, Le Toledo, Nouilles de Lan Zhou, Belvédère Kondiaronk, Chalet du Mont-Royal, Lac aux Castors, McGill, Le Balcon, Arepera, The Bagel Class) under Montréal and its neighborhoods, with coordinates from the photo GPS.
-4. Tag the 78 Montreal photos and write their captions in the media library, then run `wp tufte-places sync` so the five posts pick up their places.
+4. Tag the 78 Montreal photos and write their captions in the media library, and the five posts pick up their places as each photo is tagged.
 5. Deploy through a WordPress.com GitHub deployment, like Tufte Formats.
 
 ## Decided in the brainstorm (Derek)
@@ -177,7 +177,7 @@ At minimum: taxonomy and meta registration, the general-place clearing rule (edi
 - Locality comes from the parent chain, not from parsing the address.
 - The per-gallery map toggle is a block attribute with a tiny no-build editor script.
 - Child places roll up into parent archives.
-- Post places resync when a photo's places change, derived places are removed when they no longer apply, and a WP-CLI command handles backfill.
+- Post places resync when a photo's places change, and derived places are removed when they no longer apply.
 - The featured image doesn't count toward a post's places.
 - The editor clears a just-inserted caption that matches the library, and identical captions count as no override.
 - The plugin wraps a gallery and its place line in one container so themes can position the line.

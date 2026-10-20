@@ -244,10 +244,12 @@ Build `$tp_external_image_markup_rendered` by rendering the same markup with the
 
 ---
 
-### Task 6: Post place sync and the CLI command
+### Task 6: Post place sync
+
+_This task first included a `wp` backfill command in `includes/cli.php`. It was removed after the live rollout showed the photo hook keeps posts in step on its own._
 
 **Files:**
-- Create: `includes/sync.php`, `includes/cli.php`, `tests/test-sync.php`
+- Create: `includes/sync.php`, `tests/test-sync.php`
 
 **Interfaces:**
 - Consumes: `tufte_places_block_attachment_ids()`.
@@ -256,7 +258,6 @@ Build `$tp_external_image_markup_rendered` by rendering the same markup with the
   - `tufte_places_sync_post( int $post_id ): void`. Derived places are the union of place terms on the content's attachments. It sets the post's terms to (current terms minus the previous `tufte_places_derived`) plus the new derived set, then stores the new set in post meta `tufte_places_derived` (array of ints). It skips revisions, autosaves, and attachments, and only touches post types in `tufte_places_object_types()` other than `attachment`.
   - `tufte_places_posts_using_attachment( int $attachment_id ): array<int>`: post IDs (any status except `trash` and `auto-draft`) whose content contains `wp-image-{$id}"` or `"id":{$id}` followed by `,` or `}`, via `$wpdb->prepare` with `LIKE`.
   - Hooks: `wp_after_insert_post` calls `tufte_places_sync_post`. `set_object_terms` for `place` on an attachment resyncs every post from `tufte_places_posts_using_attachment`.
-  - WP-CLI: `wp tufte-places sync [--post=<id>]` syncs one post or every post of the synced types, printing `Synced N posts.`
 
 - [ ] **Step 1: Write the failing tests:**
 
@@ -276,8 +277,8 @@ tufte_places_assert_same( array( 6162, 6191 ), tufte_places_content_attachment_i
 `tufte_places_sorted_terms( int $post_id ): array` is a test helper in `run.php` that returns sorted term IDs. Assertions compare sorted arrays.
 
 - [ ] **Step 2: Sync and run; expect FAIL.**
-- [ ] **Step 3: Implement** the functions, hooks, and CLI command (registered only when `WP_CLI` is defined).
-- [ ] **Step 4: Sync and run; expect PASS.** Then run `studio wp --path /Users/derekhanson/Studio/derekhansonblog tufte-places sync` and expect `Synced N posts.`
+- [ ] **Step 3: Implement** the functions and hooks.
+- [ ] **Step 4: Sync and run; expect PASS.**
 - [ ] **Step 5: Commit:** "Sync post places from their photos".
 
 ---
