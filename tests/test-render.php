@@ -7,7 +7,7 @@
 
 $tp_r_place = (int) wp_insert_term( 'Render test place', 'place' )['term_id'];
 
-$tp_r_blue  = wp_insert_attachment( array( 'post_title' => 'Render blue trim', 'post_excerpt' => 'Blue trim on a "Plateau" row house.', 'post_mime_type' => 'image/jpeg', 'post_status' => 'inherit' ) );
+$tp_r_blue  = wp_insert_attachment( array( 'post_title' => 'Render blue trim', 'post_excerpt' => 'Blue trim on a "Marais" row house.', 'post_mime_type' => 'image/jpeg', 'post_status' => 'inherit' ) );
 $tp_r_bread = wp_insert_attachment( array( 'post_title' => 'Render bread wall', 'post_excerpt' => 'The bread wall', 'post_mime_type' => 'image/jpeg', 'post_status' => 'inherit' ) );
 $tp_r_plain = wp_insert_attachment( array( 'post_title' => 'Render untagged', 'post_excerpt' => '<em>Quiet</em> street<script>alert(1)</script>', 'post_mime_type' => 'image/jpeg', 'post_status' => 'inherit' ) );
 wp_set_object_terms( $tp_r_blue, array( $tp_r_place ), 'place' );
@@ -44,7 +44,7 @@ add_filter( 'render_block_core/gallery', 'tufte_places_render_gallery', 10, 2 );
 $tp_out = do_blocks( $tp_gallery_markup ); // Gallery of both, no block captions.
 tufte_places_assert_same( 1, substr_count( $tp_out, 'class="tufte-places-group' ), 'render: gallery wrapped once' );
 tufte_places_assert_same( 1, substr_count( $tp_out, 'class="tufte-places-line"' ), 'render: one line per gallery, none per inner image' );
-tufte_places_assert_same( true, str_contains( $tp_out, 'Blue trim on a &quot;Plateau&quot; row house.' ) || str_contains( $tp_out, 'Blue trim on a "Plateau" row house.' ), 'render: library caption filled in safely' );
+tufte_places_assert_same( true, str_contains( $tp_out, 'Blue trim on a &quot;Marais&quot; row house.' ) || str_contains( $tp_out, 'Blue trim on a "Marais" row house.' ), 'render: library caption filled in safely' );
 tufte_places_assert_same( 2, substr_count( $tp_out, '<figcaption class="wp-element-caption">' ), 'render: every gallery image gets its library caption' );
 tufte_places_assert_same( true, str_contains( $tp_out, '>The bread wall</figcaption>' ), 'render: the second library caption is filled in' );
 tufte_places_assert_same( true, strpos( $tp_out, 'tufte-places-line' ) > strrpos( $tp_out, '</figure>' ), 'render: the line follows the gallery' );

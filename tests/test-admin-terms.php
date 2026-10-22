@@ -5,10 +5,10 @@
  * @package Tufte_Places
  */
 
-$tp_id = wp_insert_term( 'Test Cowork', 'place' )['term_id'];
-tufte_places_save_term_fields( $tp_id, array( 'tufte_places_precision' => 'exact', 'tufte_places_address' => ' 4388 rue Saint-Denis ', 'tufte_places_lat' => '45.52322', 'tufte_places_lng' => 'not a number' ) );
-tufte_places_assert_same( '4388 rue Saint-Denis', get_term_meta( $tp_id, 'address', true ), 'term fields: address trimmed' );
-tufte_places_assert_same( 45.52322, (float) get_term_meta( $tp_id, 'lat', true ), 'term fields: lat saved as a number' );
+$tp_id = wp_insert_term( 'Test Atelier Cowork', 'place' )['term_id'];
+tufte_places_save_term_fields( $tp_id, array( 'tufte_places_precision' => 'exact', 'tufte_places_address' => ' Place des Vosges ', 'tufte_places_lat' => '48.85561', 'tufte_places_lng' => 'not a number' ) );
+tufte_places_assert_same( 'Place des Vosges', get_term_meta( $tp_id, 'address', true ), 'term fields: address trimmed' );
+tufte_places_assert_same( 48.85561, (float) get_term_meta( $tp_id, 'lat', true ), 'term fields: lat saved as a number' );
 tufte_places_assert_same( '', get_term_meta( $tp_id, 'lng', true ), 'term fields: an invalid lng is not saved' );
 
 // Out-of-range coordinates are not saved, and delete the previous value.
@@ -43,7 +43,7 @@ tufte_places_assert_same( true, (bool) preg_match( '/value="general"\s+checked/'
 $tp_prev_user = get_current_user_id();
 $tp_post_bak  = $_POST;
 $tp_admins    = get_users( array( 'role' => 'administrator', 'number' => 1, 'fields' => 'ID' ) );
-$tp_hook_id   = wp_insert_term( 'Test Hook Cowork', 'place' )['term_id'];
+$tp_hook_id   = wp_insert_term( 'Test Hook Atelier Cowork', 'place' )['term_id'];
 $tp_payload   = array( 'tufte_places_precision' => 'exact', 'tufte_places_address' => '1 Main St', 'tufte_places_lat' => '10', 'tufte_places_lng' => '20' );
 
 wp_set_current_user( (int) $tp_admins[0] );

@@ -10,15 +10,15 @@ tufte_places_assert_same( true, is_taxonomy_hierarchical( 'place' ), 'taxonomy: 
 tufte_places_assert_same( array( 'post', 'attachment' ), get_taxonomy( 'place' )->object_type, 'taxonomy: on posts and attachments' );
 tufte_places_assert_same( 'places', get_taxonomy( 'place' )->rest_base, 'taxonomy: rest base' );
 
-$tp_exact = wp_insert_term( 'Test Hof Kelsten', 'place' )['term_id'];
-update_term_meta( $tp_exact, 'address', '4524 boul. Saint-Laurent' );
-update_term_meta( $tp_exact, 'lat', 45.52039 );
-update_term_meta( $tp_exact, 'lng', -73.58704 );
+$tp_exact = wp_insert_term( 'Test MusÃ©e Carnavalet', 'place' )['term_id'];
+update_term_meta( $tp_exact, 'address', '23 rue de SÃ©vignÃ©' );
+update_term_meta( $tp_exact, 'lat', 48.85754 );
+update_term_meta( $tp_exact, 'lng', 2.36255 );
 $tp = tufte_places_get_place( $tp_exact );
 tufte_places_assert_same( 'exact', $tp['precision'], 'place: precision defaults to exact' );
-tufte_places_assert_same( 45.52039, $tp['lat'], 'place: exact keeps lat' );
+tufte_places_assert_same( 48.85754, $tp['lat'], 'place: exact keeps lat' );
 
-$tp_general = wp_insert_term( 'Test Ames', 'place' )['term_id'];
+$tp_general = wp_insert_term( 'Test Lyon', 'place' )['term_id'];
 update_term_meta( $tp_general, 'precision', 'general' );
 update_term_meta( $tp_general, 'address', '123 Secret St' );
 update_term_meta( $tp_general, 'lat', 42.0 );
