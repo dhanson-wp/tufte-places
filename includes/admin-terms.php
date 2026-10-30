@@ -2,7 +2,7 @@
 /**
  * Place fields on the term screens.
  *
- * Adds precision, address, and coordinate fields to the add and edit forms for
+ * Adds precision, Google Maps link, address, and coordinate fields to the add and edit forms for
  * the place taxonomy, and saves them.
  *
  * @package Tufte_Places
@@ -34,12 +34,17 @@ function tufte_places_bounded_coordinate( $value, float $limit ): ?float {
 /**
  * Save the place fields for a term.
  *
- * Does no nonce or capability check; the hook callbacks do that.
+ * Does no nonce or capability check; the hook callbacks do that. A new map
+ * link fills the coordinates, unless the same save changed them by hand.
  *
  * @param int   $term_id Place term ID.
  * @param array $input   Unslashed request data.
  */
 function tufte_places_save_term_fields( int $term_id, array $input ): void {
+	$old_url = (string) get_term_meta( $term_id, 'map_url', true );
+	$old_lat = get_term_meta( $term_id, 'lat', true );
+	$old_lng = get_term_meta( $term_id, 'lng', true );
+
 	update_term_meta( $term_id, 'precision', tufte_places_sanitize_precision( $input['tufte_places_precision'] ?? 'exact' ) );
 
 	$address = isset( $input['tufte_places_address'] ) && is_string( $input['tufte_places_address'] )
@@ -51,16 +56,34 @@ function tufte_places_save_term_fields( int $term_id, array $input ): void {
 		update_term_meta( $term_id, 'address', $address );
 	}
 
-	$limits = array(
+	$limits         = array(
 		'lat' => 90.0,
 		'lng' => 180.0,
 	);
+	$old            = array(
+		'lat' => is_numeric( $old_lat ) ? (float) $old_lat : null,
+		'lng' => is_numeric( $old_lng ) ? (float) $old_lng : null,
+	);
+	$coords_by_hand = false;
 	foreach ( $limits as $key => $limit ) {
 		$number = tufte_places_bounded_coordinate( $input[ 'tufte_places_' . $key ] ?? '', $limit );
+		if ( $number !== $old[ $key ] ) {
+			$coords_by_hand = true;
+		}
 		if ( null === $number ) {
 			delete_term_meta( $term_id, $key );
 		} else {
 			update_term_meta( $term_id, $key, $number );
+		}
+	}
+
+	$url = tufte_places_sanitize_map_url( $input['tufte_places_map_url'] ?? '' );
+	if ( '' === $url ) {
+		delete_term_meta( $term_id, 'map_url' );
+	} else {
+		update_term_meta( $term_id, 'map_url', $url );
+		if ( $url !== $old_url && ! $coords_by_hand ) {
+			tufte_places_fill_from_map_url( $term_id, $url );
 		}
 	}
 
@@ -86,12 +109,13 @@ add_action( 'edited_place', 'tufte_places_handle_term_form' );
  * Print the field inputs shared by the add and edit forms.
  *
  * @param string $precision Current precision.
+ * @param string $map_url   Current Google Maps link.
  * @param string $address   Current address.
  * @param string $lat       Current latitude.
  * @param string $lng       Current longitude.
  * @param bool   $as_rows   True for table rows (edit screen), false for divs (add screen).
  */
-function tufte_places_print_term_fields( string $precision, string $address, string $lat, string $lng, bool $as_rows ): void {
+function tufte_places_print_term_fields( string $precision, string $map_url, string $address, string $lat, string $lng, bool $as_rows ): void {
 	$open = static function ( string $label, string $for, string $class ) use ( $as_rows ): void {
 		if ( $as_rows ) {
 			printf( '<tr class="form-field %1$s"><th scope="row"><label for="%2$s">%3$s</label></th><td>', esc_attr( $class ), esc_attr( $for ), esc_html( $label ) );
@@ -122,24 +146,28 @@ function tufte_places_print_term_fields( string $precision, string $address, str
 	<?php
 	$close( __( 'A general place shows only its name. It never stores or shows an address or coordinates.', 'tufte-places' ) );
 
+	$open( __( 'Google Maps link', 'tufte-places' ), 'tufte_places_map_url', 'tufte-places-exact-field' );
+	printf( '<input type="url" name="tufte_places_map_url" id="tufte_places_map_url" value="%s" />', esc_attr( $map_url ) );
+	$close( __( 'Paste a link from Google Maps, including a share link from the app. Saving fills in the coordinates, and the address if it\'s empty.', 'tufte-places' ) );
+
 	$open( __( 'Address', 'tufte-places' ), 'tufte_places_address', 'tufte-places-exact-field' );
 	printf( '<input type="text" name="tufte_places_address" id="tufte_places_address" value="%s" />', esc_attr( $address ) );
 	$close( '' );
 
 	$open( __( 'Latitude', 'tufte-places' ), 'tufte_places_lat', 'tufte-places-exact-field' );
 	printf( '<input type="text" inputmode="decimal" name="tufte_places_lat" id="tufte_places_lat" value="%s" />', esc_attr( $lat ) );
-	$close( __( 'A number from -90 to 90.', 'tufte-places' ) );
+	$close( __( 'Filled in from the Google Maps link. A number from -90 to 90.', 'tufte-places' ) );
 
 	$open( __( 'Longitude', 'tufte-places' ), 'tufte_places_lng', 'tufte-places-exact-field' );
 	printf( '<input type="text" inputmode="decimal" name="tufte_places_lng" id="tufte_places_lng" value="%s" />', esc_attr( $lng ) );
-	$close( __( 'A number from -180 to 180.', 'tufte-places' ) );
+	$close( __( 'Filled in from the Google Maps link. A number from -180 to 180.', 'tufte-places' ) );
 }
 
 /**
  * Fields on the add-term form.
  */
 function tufte_places_add_form_fields(): void {
-	tufte_places_print_term_fields( 'exact', '', '', '', false );
+	tufte_places_print_term_fields( 'exact', '', '', '', '', false );
 }
 add_action( 'place_add_form_fields', 'tufte_places_add_form_fields' );
 
@@ -152,6 +180,7 @@ function tufte_places_edit_form_fields( $term ): void {
 	$term_id = (int) $term->term_id;
 	tufte_places_print_term_fields(
 		tufte_places_sanitize_precision( get_term_meta( $term_id, 'precision', true ) ),
+		(string) get_term_meta( $term_id, 'map_url', true ),
 		(string) get_term_meta( $term_id, 'address', true ),
 		(string) get_term_meta( $term_id, 'lat', true ),
 		(string) get_term_meta( $term_id, 'lng', true ),
@@ -161,7 +190,7 @@ function tufte_places_edit_form_fields( $term ): void {
 add_action( 'place_edit_form_fields', 'tufte_places_edit_form_fields' );
 
 /**
- * Hide the address and coordinate fields while General is selected.
+ * Hide the link, address, and coordinate fields while General is selected.
  */
 function tufte_places_term_screen_script(): void {
 	$screen = get_current_screen();

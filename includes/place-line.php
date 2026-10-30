@@ -53,21 +53,28 @@ function tufte_places_format_coordinate( float $value ): string {
 }
 
 /**
- * OpenStreetMap URL for an exact place with coordinates.
+ * Map URL for an exact place: its Google Maps link, or OpenStreetMap at its
+ * coordinates.
  *
  * @param array $place Place array from tufte_places_get_place().
  * @return string Empty when there is nothing to link to.
  */
 function tufte_places_map_url( array $place ): string {
-	if ( 'exact' !== ( $place['precision'] ?? '' ) || ! is_float( $place['lat'] ?? null ) || ! is_float( $place['lng'] ?? null ) ) {
+	if ( 'exact' !== ( $place['precision'] ?? '' ) ) {
 		return '';
 	}
 
-	$url = sprintf(
-		'https://www.openstreetmap.org/?mlat=%1$s&mlon=%2$s#map=18/%1$s/%2$s',
-		tufte_places_format_coordinate( $place['lat'] ),
-		tufte_places_format_coordinate( $place['lng'] )
-	);
+	if ( '' !== ( $place['map_url'] ?? '' ) ) {
+		$url = $place['map_url'];
+	} elseif ( is_float( $place['lat'] ?? null ) && is_float( $place['lng'] ?? null ) ) {
+		$url = sprintf(
+			'https://www.openstreetmap.org/?mlat=%1$s&mlon=%2$s#map=18/%1$s/%2$s',
+			tufte_places_format_coordinate( $place['lat'] ),
+			tufte_places_format_coordinate( $place['lng'] )
+		);
+	} else {
+		return '';
+	}
 
 	/**
 	 * Filters the map URL for a place.

@@ -3,8 +3,9 @@
  * The place taxonomy and its term meta.
  *
  * A place is a hierarchical term on posts and attachments, with a precision
- * (exact or general), an address, and coordinates. A general place never
- * stores or outputs an address or coordinates, in the database or in REST.
+ * (exact or general), an address, a Google Maps link, and coordinates. A
+ * general place never stores or outputs an address, link, or coordinates, in
+ * the database or in REST.
  *
  * @package Tufte_Places
  * @since 0.1.0
@@ -97,6 +98,22 @@ function tufte_places_register_taxonomy(): void {
 			'sanitize_callback' => 'sanitize_text_field',
 		)
 	);
+	register_term_meta(
+		'place',
+		'map_url',
+		array(
+			'type'              => 'string',
+			'single'            => true,
+			'default'           => '',
+			'show_in_rest'      => array(
+				'schema' => array(
+					'type'    => 'string',
+					'pattern' => '^$|' . TUFTE_PLACES_MAP_URL_PATTERN,
+				),
+			),
+			'sanitize_callback' => 'tufte_places_sanitize_map_url',
+		)
+	);
 	foreach ( array( 'lat', 'lng' ) as $key ) {
 		register_term_meta(
 			'place',
@@ -128,11 +145,13 @@ function tufte_places_get_place( int $term_id ): ?array {
 
 	$precision = tufte_places_sanitize_precision( get_term_meta( $term_id, 'precision', true ) );
 	$address   = '';
+	$map_url   = '';
 	$lat       = null;
 	$lng       = null;
 
 	if ( 'exact' === $precision ) {
 		$address = (string) get_term_meta( $term_id, 'address', true );
+		$map_url = (string) get_term_meta( $term_id, 'map_url', true );
 		$raw_lat = get_term_meta( $term_id, 'lat', true );
 		$raw_lng = get_term_meta( $term_id, 'lng', true );
 		$lat     = is_numeric( $raw_lat ) ? (float) $raw_lat : null;
@@ -147,6 +166,7 @@ function tufte_places_get_place( int $term_id ): ?array {
 		'slug'      => $term->slug,
 		'precision' => $precision,
 		'address'   => $address,
+		'map_url'   => $map_url,
 		'lat'       => $lat,
 		'lng'       => $lng,
 		'link'      => is_wp_error( $link ) ? '' : $link,
@@ -155,7 +175,7 @@ function tufte_places_get_place( int $term_id ): ?array {
 }
 
 /**
- * Delete address and coordinates from a general place.
+ * Delete address, map link, and coordinates from a general place.
  *
  * @param int $term_id Place term ID.
  */
@@ -164,6 +184,7 @@ function tufte_places_enforce_general( int $term_id ): void {
 		return;
 	}
 	delete_term_meta( $term_id, 'address' );
+	delete_term_meta( $term_id, 'map_url' );
 	delete_term_meta( $term_id, 'lat' );
 	delete_term_meta( $term_id, 'lng' );
 }
@@ -181,7 +202,7 @@ function tufte_places_enforce_general_after_rest( WP_Term $term ): void {
 add_action( 'rest_after_insert_place', 'tufte_places_enforce_general_after_rest' );
 
 /**
- * Second guard: blank address and coordinates in REST responses for general places.
+ * Second guard: blank address, map link, and coordinates in REST responses for general places.
  *
  * @param WP_REST_Response $response Response.
  * @param WP_Term          $item     Term.
@@ -195,6 +216,7 @@ function tufte_places_rest_prepare_place( $response, $item ) {
 	$data = $response->get_data();
 	if ( isset( $data['meta'] ) && is_array( $data['meta'] ) ) {
 		$data['meta']['address'] = '';
+		$data['meta']['map_url'] = '';
 		$data['meta']['lat']     = null;
 		$data['meta']['lng']     = null;
 		$response->set_data( $data );
