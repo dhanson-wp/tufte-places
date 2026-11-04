@@ -16,6 +16,8 @@ $tp_cases = array(
 	'country domain'                 => array( 'https://www.google.fr/maps/@48.8566,2.3522,15z', 48.8566, 2.3522, '' ),
 	'negative coordinates'           => array( 'https://www.google.com/maps/@-33.8568,151.2153,15z', -33.8568, 151.2153, '' ),
 	'text query'                     => array( 'https://maps.google.com/?q=Mus%C3%A9e+Carnavalet,+23+Rue+de+S%C3%A9vign%C3%A9,+Paris&ftid=0x47e66e0:0x1', null, null, 'Musée Carnavalet, 23 Rue de Sévigné, Paris' ),
+	'share link redirect'            => array( 'https://maps.google.com?q=Jester+Park,+12130+Northwest+128th+Street,+Granger,+IA+50109&ftid=0x87ec2a276c9da037:0x938b191b913405d0&entry=gps&g_st=ic', null, null, 'Jester Park, 12130 Northwest 128th Street, Granger, IA 50109' ),
+	'link a browser rewrites to'     => array( 'https://www.google.com/maps/place/Jester+Park/@41.78032,-93.7707586,17z/data=!3m1!4b1!4m6!3m5!1s0x87ec2a276c9da037:0x938b191b913405d0!8m2!3d41.78032!4d-93.7707586!16s%2Fg%2F1tgn58q6?entry=ttu', 41.78032, -93.7707586, '' ),
 	'not Google'                     => array( 'https://www.openstreetmap.org/?mlat=48.85754&mlon=2.36255', null, null, '' ),
 	'Google lookalike host'          => array( 'https://google.com.example.org/maps/@48.8566,2.3522,15z', null, null, '' ),
 	'Google but not Maps'            => array( 'https://www.google.com/search?q=48.85754,2.36255', null, null, '' ),

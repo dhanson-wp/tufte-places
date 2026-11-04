@@ -19,7 +19,7 @@ Every place has a precision:
 
 I never want to type coordinates, so an exact place can take a Google Maps link instead. Paste one into the "Google Maps link" field on the place screen, or send it as `meta.map_url` over REST, and saving fills in `lat` and `lng` from the link. If the link only has a search (`?q=Name,+Address`), it fills an empty address and leaves the coordinates blank.
 
-- Share links from the Maps app (`maps.app.goo.gl`) are followed to the full link when the place is saved. The share link itself is what's kept.
+- Share links from the Maps app (`maps.app.goo.gl`) are followed to the full link when the place is saved. The share link itself is what's kept. In my testing, a phone share link for a business or park leads to a search, so it fills the address but not the coordinates. Open the share link in a browser, where Google rewrites it to a place link with the pin, and save that link instead.
 - The pin in a place link (`!3d…!4d…`) wins over the `@lat,lng` view center, which is only where the map was scrolled.
 - Coordinates typed or sent in the same save win over the link, so photo GPS can still be exact.
 - Saving the same link again doesn't touch the coordinates. Only a new link refills them.
