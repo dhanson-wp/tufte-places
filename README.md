@@ -10,21 +10,26 @@ A place is a term in a hierarchical `place` taxonomy on posts and attachments, s
 
 Every place has a precision:
 
-- **Exact** places have an address and `lat` and `lng` coordinates, and they can link to a map.
-- **General** places show only a name. This is my privacy rule: a general place never stores or outputs an address or coordinates. They're deleted when the place is saved, and blanked in REST responses as a second guard.
+- **Exact** places have an address, a Google Maps link, and `lat` and `lng` coordinates, and they can link to a map.
+- **General** places show only a name. This is my privacy rule: a general place never stores or outputs an address, map link, or coordinates. They're deleted when the place is saved, and blanked in REST responses as a second guard.
 
 `tufte_places_get_place( $term_id )` returns a place as a plain array.
+
+## Map links
+
+I never want to type coordinates, so an exact place can take a Google Maps link instead. Paste one into the "Google Maps link" field on the place screen, or send it as `meta.map_url` over REST, and saving fills in `lat` and `lng` from the link. If the link only has a search (`?q=Name,+Address`), it fills an empty address and leaves the coordinates blank.
+
+- Share links from the Maps app (`maps.app.goo.gl`) are followed to the full link when the place is saved. The share link itself is what's kept. In my testing, a phone share link for a business or park leads to a search, so it fills the address but not the coordinates. Open the share link in a browser, where Google rewrites it to a place link with the pin, and save that link instead.
+- The pin in a place link (`!3d…!4d…`) wins over the `@lat,lng` view center, which is only where the map was scrolled.
+- Coordinates typed or sent in the same save win over the link, so photo GPS can still be exact.
+- Saving the same link again doesn't touch the coordinates. Only a new link refills them.
+- Only Google Maps links are accepted; anything else is dropped on the form and refused over REST.
+
+The Places list has a Map column that links to each place's map, or says "Needs coordinates" for an exact place without them. The place line's Map link goes to the Google listing when there is one, and to OpenStreetMap otherwise. A general place never keeps a map link.
 
 ## Tagging photos
 
 Tag a photo with a place in the Places field of the media modal. Tag a post the same way, or let the plugin do it for you: when a post uses tagged photos, the plugin adds those places to the post, and it removes them again when the photos go away. A place you added by hand that also comes from a photo is removed when that photo goes away, so add a place by hand only when no photo carries it.
-
-To sync every post (or one) after a bulk change:
-
-```
-wp tufte-places sync
-wp tufte-places sync --post=123
-```
 
 ## Keep off the map
 
@@ -50,7 +55,7 @@ Under an image or gallery whose photos have places, the plugin adds a line wrapp
 
 ## Filters
 
-- `tufte_places_map_url( $url, $place )` changes the map link. It defaults to OpenStreetMap.
+- `tufte_places_map_url( $url, $place )` changes the map link. It defaults to the place's Google Maps link, or OpenStreetMap when there isn't one.
 - `tufte_places_object_types( $types )` changes which post types can carry a place. It defaults to `post` and `attachment`.
 
 ## The archive
